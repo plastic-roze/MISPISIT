@@ -65,7 +65,7 @@ pytest tests/ -v
 | Компонент | Технология |
 |-----------|-----------|
 | Сервер | Python 3.14 |
-| БД | PostgreSQL 15+ |
+| БД | SQLite |
 | ORM | SQLAlchemy 2.x |
 | Raw SQL | psycopg2-binary |
 | GUI | Tkinter |
@@ -88,6 +88,3 @@ git checkout -b feature/auth
 # ... разработка ...
 git merge feature/auth
 ```
-
-## Автор
-Романишин Д.О., гр. 1483-05, Псковский государственный университет, 2026
