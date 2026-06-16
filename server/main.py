@@ -1,10 +1,8 @@
 """
-TCP Server for PC Assembly System.
-Handles multiple client connections via threading.
+TCP Server for PC Assembly System - SQLite.
 """
 import sys
 import pathlib
-# Ensure package imports work when running this file as a script
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 import socket
 import threading
@@ -13,7 +11,6 @@ import traceback
 from server.auth import AuthService
 from server.factory import RepositoryFactory
 
-# Active sessions tracking
 active_sessions = {}
 sessions_lock = threading.Lock()
 
@@ -57,7 +54,7 @@ class Server:
 
         try:
             while True:
-                data = client_socket.recv(4096)
+                data = client_socket.recv(8192)
                 if not data:
                     break
 
@@ -84,7 +81,6 @@ class Server:
         action = request.get('action')
         session = active_sessions.get(session_id, {})
 
-        # Allow new user registration without authentication
         if action == 'register':
             username = request.get('username')
             password = request.get('password')
@@ -95,11 +91,10 @@ class Server:
             except Exception as e:
                 return {'success': False, 'error': str(e)}
 
-        # Auth actions
         if action == 'login':
             username = request.get('username')
             password = request.get('password')
-            print(f"[SERVER] Login attempt for: {username}")
+            print(f"[SERVER] Login attempt: {username}")
             user = AuthService.authenticate(username, password)
             if user:
                 with sessions_lock:
@@ -114,14 +109,12 @@ class Server:
                 active_sessions[session_id]['user'] = None
             return {'success': True}
 
-        # Check authentication for protected actions
         if not session.get('authenticated'):
             return {'success': False, 'error': 'Authentication required'}
 
-        # Get repository type (ORM or SQL)
         use_orm = request.get('use_orm', True)
 
-        # Component operations
+        # COMPONENTS
         if action == 'component_create':
             repo = RepositoryFactory.create_component_repository(use_orm)
             component_id = repo.create(request.get('data', {}))
@@ -147,7 +140,7 @@ class Server:
             result = repo.delete(request.get('component_id'))
             return {'success': result}
 
-        # Order operations
+        # ORDERS
         if action == 'order_create':
             repo = RepositoryFactory.create_order_repository(use_orm)
             order_id = repo.create(request.get('data', {}))
@@ -173,7 +166,99 @@ class Server:
             result = repo.delete(request.get('order_id'))
             return {'success': result}
 
-        # User operations (admin only)
+        if action == 'order_get_items':
+            repo = RepositoryFactory.create_order_repository(use_orm)
+            items = repo.get_order_items(request.get('order_id'))
+            return {'success': True, 'data': items}
+
+        if action == 'order_add_item':
+            repo = RepositoryFactory.create_order_repository(use_orm)
+            result = repo.add_order_item(
+                request.get('order_id'),
+                request.get('component_id'),
+                request.get('quantity'),
+                request.get('unit_price')
+            )
+            return {'success': result}
+
+        # CLIENTS
+        if action == 'client_create':
+            repo = RepositoryFactory.create_client_repository(use_orm)
+            client_id = repo.create(request.get('data', {}))
+            return {'success': True, 'client_id': client_id}
+
+        if action == 'client_get':
+            repo = RepositoryFactory.create_client_repository(use_orm)
+            client = repo.get_by_id(request.get('client_id'))
+            return {'success': True, 'data': client}
+
+        if action == 'client_list':
+            repo = RepositoryFactory.create_client_repository(use_orm)
+            clients = repo.get_all(request.get('filters'))
+            return {'success': True, 'data': clients}
+
+        if action == 'client_update':
+            repo = RepositoryFactory.create_client_repository(use_orm)
+            result = repo.update(request.get('client_id'), request.get('data', {}))
+            return {'success': result}
+
+        if action == 'client_delete':
+            repo = RepositoryFactory.create_client_repository(use_orm)
+            result = repo.delete(request.get('client_id'))
+            return {'success': result}
+
+        # CATALOG BUILDS
+        if action == 'build_create':
+            repo = RepositoryFactory.create_catalog_build_repository(use_orm)
+            build_id = repo.create(request.get('data', {}))
+            return {'success': True, 'build_id': build_id}
+
+        if action == 'build_get':
+            repo = RepositoryFactory.create_catalog_build_repository(use_orm)
+            build = repo.get_by_id(request.get('build_id'))
+            return {'success': True, 'data': build}
+
+        if action == 'build_list':
+            repo = RepositoryFactory.create_catalog_build_repository(use_orm)
+            builds = repo.get_all(request.get('filters'))
+            return {'success': True, 'data': builds}
+
+        if action == 'build_add_component':
+            repo = RepositoryFactory.create_catalog_build_repository(use_orm)
+            result = repo.add_component(
+                request.get('build_id'),
+                request.get('component_id'),
+                request.get('quantity')
+            )
+            return {'success': result}
+
+        if action == 'build_get_components':
+            repo = RepositoryFactory.create_catalog_build_repository(use_orm)
+            components = repo.get_build_components(request.get('build_id'))
+            return {'success': True, 'data': components}
+
+        if action == 'build_delete':
+            repo = RepositoryFactory.create_catalog_build_repository(use_orm)
+            result = repo.delete(request.get('build_id'))
+            return {'success': result}
+
+        # FINANCES
+        if action == 'finance_create':
+            repo = RepositoryFactory.create_finance_repository(use_orm)
+            record_id = repo.create(request.get('data', {}))
+            return {'success': True, 'record_id': record_id}
+
+        if action == 'finance_list':
+            repo = RepositoryFactory.create_finance_repository(use_orm)
+            records = repo.get_all(request.get('filters'))
+            return {'success': True, 'data': records}
+
+        if action == 'finance_summary':
+            repo = RepositoryFactory.create_finance_repository(use_orm)
+            summary = repo.get_summary()
+            return {'success': True, 'data': summary}
+
+        # USERS (admin only)
         if action in ['user_create', 'user_delete', 'user_list']:
             user = session.get('user', {})
             if user.get('role') != 'admin':
@@ -190,14 +275,13 @@ class Server:
                 return {'success': True, 'data': users}
 
             if action == 'user_delete':
-                # Requires re-authentication
                 if not request.get('confirmed'):
-                    return {'success': False, 'error': 'Deletion requires confirmation and re-auth'}
+                    return {'success': False, 'error': 'Deletion requires confirmation'}
                 repo = RepositoryFactory.create_user_repository(use_orm)
                 result = repo.delete(request.get('user_id'))
                 return {'success': result}
 
-        # Active sessions
+        # ACTIVE SESSIONS
         if action == 'active_sessions':
             with sessions_lock:
                 sessions = [{

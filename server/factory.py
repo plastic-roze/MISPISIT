@@ -1,26 +1,36 @@
 """
 Factory Pattern for creating repository instances.
 """
-from server.repositories.orm_repository import OrmComponentRepository, OrmOrderRepository, OrmUserRepository
-from server.repositories.sql_repository import SqlComponentRepository, SqlOrderRepository, SqlUserRepository
+from server.repositories.orm_repository import (
+    OrmComponentRepository, OrmOrderRepository, OrmUserRepository,
+    OrmClientRepository, OrmCatalogBuildRepository, OrmFinanceRepository
+)
+from server.repositories.sql_repository import (
+    SqlComponentRepository, SqlOrderRepository, SqlUserRepository,
+    SqlClientRepository, SqlCatalogBuildRepository, SqlFinanceRepository
+)
 
 class RepositoryFactory:
-    """Factory for creating ORM or SQL repository instances."""
-
     @staticmethod
     def create_component_repository(use_orm: bool = True):
-        if use_orm:
-            return OrmComponentRepository()
-        return SqlComponentRepository()
+        return OrmComponentRepository() if use_orm else SqlComponentRepository()
 
     @staticmethod
     def create_order_repository(use_orm: bool = True):
-        if use_orm:
-            return OrmOrderRepository()
-        return SqlOrderRepository()
+        return OrmOrderRepository() if use_orm else SqlOrderRepository()
 
     @staticmethod
     def create_user_repository(use_orm: bool = True):
-        if use_orm:
-            return OrmUserRepository()
-        return SqlUserRepository()
+        return OrmUserRepository() if use_orm else SqlUserRepository()
+
+    @staticmethod
+    def create_client_repository(use_orm: bool = True):
+        return OrmClientRepository() if use_orm else SqlClientRepository()
+
+    @staticmethod
+    def create_catalog_build_repository(use_orm: bool = True):
+        return OrmCatalogBuildRepository() if use_orm else SqlCatalogBuildRepository()
+
+    @staticmethod
+    def create_finance_repository(use_orm: bool = True):
+        return OrmFinanceRepository() if use_orm else SqlFinanceRepository()
