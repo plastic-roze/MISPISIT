@@ -1,0 +1,46 @@
+%% Mermaid sequence diagram converted from PlantUML
+sequenceDiagram
+    actor Client as Client
+    participant GUI as GUI\n(Tkinter)
+    participant TCPClient as TCPClient
+    participant Server as Server
+    participant Auth as AuthService
+    participant Factory as RepositoryFactory
+    participant Repo as IOrderRepository
+    participant DB as PostgreSQL
+
+    Client ->> GUI: Ввод логина/пароля
+    GUI ->> TCPClient: Отправка запроса
+    TCPClient ->> Server: action: login\nusername, password
+    Server ->> Auth: authenticate(username, password)
+    Auth ->> DB: SELECT user by username
+    DB -->> Auth: user_data (hash, role)
+    Auth -->> Server: user_object {id, username, role}
+    Server -->> TCPClient: {success: true, user: {...}}
+    TCPClient -->> GUI: Отображение результата
+
+    Client ->> GUI: Выбор компонентов / ввод суммы
+    GUI ->> TCPClient: Отправка запроса
+    TCPClient ->> Server: action: order_create\nuse_orm: true\ndata: {...}
+    Server ->> Factory: create_order_repository(True)
+    Factory -->> Server: OrmOrderRepository
+    Server ->> Repo: create(data)
+    Repo ->> DB: INSERT INTO orders ...
+    DB -->> Repo: order_id
+    Repo ->> DB: INSERT INTO finances ...
+    DB -->> Repo: record_id
+    Repo -->> Server: order_id
+    Server -->> TCPClient: {success: true, order_id: 1}
+    TCPClient -->> GUI: Обновление списка заказов
+
+    Client ->> GUI: Выбор заказа / Новый статус
+    GUI ->> TCPClient: action: order_update_status\norder_id, status: "assembling"
+    TCPClient ->> Server: {order_id, status}
+    Server ->> Factory: create_order_repository(True)
+    Factory -->> Server: OrmOrderRepository
+    Server ->> Repo: update_status(1, "assembling")
+    Repo ->> DB: UPDATE orders SET status=...
+    DB -->> Repo: OK
+    Repo -->> Server: true
+    Server -->> TCPClient: {success: true}
+    TCPClient -->> GUI: Обновление таблицы

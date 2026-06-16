@@ -1,0 +1,37 @@
+%% Mermaid use case-like diagram (using graph with actors)
+graph LR
+    Client((Клиент))
+    Operator((Оператор))
+    Admin((Администратор))
+
+    subgraph System [Система сборки ПК]
+        UC1([Просмотр каталога])
+        UC2([Оформление заказа])
+        UC3([Управление компонентами])
+        UC4([Управление заказами])
+        UC5([Управление пользователями])
+        UC6([Просмотр финансов])
+        UC7([Авторизация])
+        UC8([Мониторинг сессий])
+        UC9([Фильтрация данных])
+        UC10([Генерация отчетов])
+    end
+
+    Client --> UC1
+    Client --> UC2
+
+    Operator --> UC3
+    Operator --> UC4
+    Operator --> UC7
+
+    Admin --> UC5
+    Admin --> UC6
+    Admin --> UC7
+    Admin --> UC8
+
+    UC2 --> UC7
+    UC4 --> UC7
+    UC5 --> UC7
+    UC1 --> UC9
+    UC3 --> UC9
+    UC6 --> UC10

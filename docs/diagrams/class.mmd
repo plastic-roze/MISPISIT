@@ -1,0 +1,143 @@
+%% Mermaid class diagram converted from PlantUML
+classDiagram
+    %% Interfaces
+    interface IComponentRepository
+    interface IOrderRepository
+    interface IUserRepository
+
+    %% ORM repositories
+    class OrmComponentRepository {
+        -db: Session
+        +create(data)
+        +get_by_id(id)
+        +get_all(filters)
+        +update(id, data)
+        +delete(id)
+    }
+
+    class SqlComponentRepository {
+        -_get_connection()
+        +create(data)
+        +get_by_id(id)
+        +get_all(filters)
+        +update(id, data)
+        +delete(id)
+    }
+
+    class OrmOrderRepository {
+        -db: Session
+        +create(data)
+        +get_by_id(id)
+        +get_all(filters)
+        +update_status(id, status)
+        +delete(id)
+    }
+
+    class SqlOrderRepository {
+        -_get_connection()
+        +create(data)
+        +get_by_id(id)
+        +get_all(filters)
+        +update_status(id, status)
+        +delete(id)
+    }
+
+    class OrmUserRepository {
+        -db: Session
+        +create(data)
+        +get_by_id(id)
+        +get_all()
+        +delete(id)
+    }
+
+    class SqlUserRepository {
+        -_get_connection()
+        +create(data)
+        +get_by_id(id)
+        +get_all()
+        +delete(id)
+    }
+
+    class RepositoryFactory {
+        +create_component_repository(use_orm)
+        +create_order_repository(use_orm)
+        +create_user_repository(use_orm)
+    }
+
+    class AuthService {
+        +hash_password(password)
+        +verify_password(password, hashed)
+        +authenticate(username, password)
+        +register_user(username, password, role)
+    }
+
+    class Server {
+        -host
+        -port
+        +start()
+        +handle_client(sock, addr)
+        +process_request(req, session_id)
+        +stop()
+    }
+
+    %% Models
+    class Component {
+        +component_id
+        +category_id
+        +component_name
+        +brand
+        +model
+        +price
+        +selling_price
+        +quantity_in_stock
+    }
+
+    class Order {
+        +order_id
+        +client_id
+        +build_id
+        +order_type
+        +status
+        +total_price
+        +order_date
+    }
+
+    class User {
+        +user_id
+        +username
+        +password_hash
+        +role
+        +created_at
+    }
+
+    class Finance {
+        +record_id
+        +order_id
+        +record_type
+        +amount
+        +record_date
+    }
+
+    %% Relationships
+    IComponentRepository <|.. OrmComponentRepository
+    IComponentRepository <|.. SqlComponentRepository
+    IOrderRepository <|.. OrmOrderRepository
+    IOrderRepository <|.. SqlOrderRepository
+    IUserRepository <|.. OrmUserRepository
+    IUserRepository <|.. SqlUserRepository
+
+    RepositoryFactory ..> OrmComponentRepository : creates
+    RepositoryFactory ..> SqlComponentRepository : creates
+    RepositoryFactory ..> OrmOrderRepository : creates
+    RepositoryFactory ..> SqlOrderRepository : creates
+    RepositoryFactory ..> OrmUserRepository : creates
+    RepositoryFactory ..> SqlUserRepository : creates
+
+    Server --> AuthService : uses
+    Server --> RepositoryFactory : uses
+    Server --> Server : uses Database
+
+    OrmComponentRepository --> Component : manages
+    OrmOrderRepository --> Order : manages
+    OrmOrderRepository --> Finance : creates
+    OrmUserRepository --> User : manages

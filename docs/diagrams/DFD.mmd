@@ -1,0 +1,44 @@
+%% Mermaid flowchart DFD-style
+flowchart LR
+    subgraph ExternalEntities [Внешние сущности]
+        Operator[Оператор]
+        Admin[Администратор]
+        Client[Клиент]
+    end
+
+    subgraph Processes [Процессы]
+        P1["1.0\nАвторизация"]
+        P2["2.0\nМаршрутизация"]
+        P3["3.0\nОбработка заказов"]
+        P4["4.0\nУправление компонентами"]
+        P5["5.0\nФинансовый учет"]
+    end
+
+    subgraph DataStores [Хранилища данных]
+        DS1[(Users)]
+        DS2[(Components)]
+        DS3[(Orders)]
+        DS4[(Finances)]
+    end
+
+    Operator -->|Учетные данные| P1
+    Operator -->|Запросы| P2
+    Admin -->|Запросы| P2
+    Client -->|Заказ| P3
+
+    P1 -->|Чтение/запись| DS1
+    P2 -->|Чтение/запись| DS2
+    P2 -->|Чтение/запись| DS3
+    P3 -->|Чтение/запись| DS3
+    P3 -->|Данные заказа| P5
+    P4 -->|Чтение/запись| DS2
+    P5 -->|Запись| DS4
+
+    DS1 -->|Данные пользователей| P2
+    DS2 -->|Комплектующие| P3
+    DS3 -->|Заказы| P5
+
+    P2 -->|Результат| Operator
+    P2 -->|Результат| Admin
+    P3 -->|Подтверждение| Client
+    P5 -->|Финансовый отчет| Admin

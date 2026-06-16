@@ -1,0 +1,50 @@
+@startuml
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam packageStyle rectangle
+
+Title UML Use Case Diagram
+
+left to right direction
+
+actor "Клиент" as Client #F39C12
+actor "Оператор" as Operator #F39C12
+actor "Администратор" as Admin #F39C12
+
+rectangle "Система сборки ПК" as System {
+
+    usecase "Просмотр каталога" as UC1
+    usecase "Оформление заказа" as UC2
+    usecase "Управление компонентами" as UC3
+    usecase "Управление заказами" as UC4
+    usecase "Управление пользователями" as UC5
+    usecase "Просмотр финансов" as UC6
+    usecase "Авторизация" as UC7
+    usecase "Мониторинг сессий" as UC8
+    usecase "Фильтрация данных" as UC9
+    usecase "Генерация отчетов" as UC10
+
+    UC2 ..> UC7 : <<include>>
+    UC4 ..> UC7 : <<include>>
+    UC5 ..> UC7 : <<include>>
+    UC1 ..> UC9 : <<include>>
+    UC3 ..> UC9 : <<include>>
+    UC6 ..> UC10 : <<include>>
+}
+
+' Client relationships
+Client --> UC1
+Client --> UC2
+
+' Operator relationships
+Operator --> UC3
+Operator --> UC4
+Operator --> UC7
+
+' Admin relationships
+Admin --> UC5
+Admin --> UC6
+Admin --> UC7
+Admin --> UC8
+
+@enduml

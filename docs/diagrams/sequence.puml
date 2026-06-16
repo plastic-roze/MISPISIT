@@ -1,0 +1,70 @@
+@startuml
+!theme plain
+skinparam backgroundColor #FEFEFE
+
+Title UML Sequence Diagram — Авторизация и оформление заказа
+
+actor "Клиент" as Client #F39C12
+participant "GUI (Tkinter)" as GUI
+participant "TCP Client" as TCPClient
+participant "Server" as Server
+participant "AuthService" as Auth
+participant "RepositoryFactory" as Factory
+participant "IOrderRepository" as Repo
+participant "PostgreSQL" as DB
+
+== Авторизация ==
+
+Client -> GUI : Ввод логина/пароля
+GUI -> TCPClient : Отправка запроса
+TCPClient -> Server : action: login\nusername, password
+Server -> Auth : authenticate(username, password)
+Auth -> DB : SELECT * FROM users WHERE username=?
+DB --> Auth : user_data (hash, role)
+Auth --> Auth : verify_password(password, hash)
+Auth --> Server : user_object {id, username, role}
+Server --> Server : Сохранение сессии
+Server --> TCPClient : {success: true, user: {...}}
+TCPClient --> GUI : Отображение результата
+GUI --> Client : "Добро пожаловать, admin"
+
+== Оформление заказа ==
+
+Client -> GUI : Выбор компонентов
+Ввод суммы
+GUI -> TCPClient : Отправка запроса
+TCPClient -> Server : action: order_create\nuse_orm: true\ndata: {...}
+
+Server -> Factory : create_order_repository(True)
+Factory --> Server : OrmOrderRepository
+
+Server -> Repo : create(data)
+Repo -> DB : INSERT INTO orders ...
+DB --> Repo : order_id
+
+Repo -> DB : INSERT INTO finances ...
+DB --> Repo : record_id
+
+Repo --> Server : order_id
+Server --> TCPClient : {success: true, order_id: 1}
+TCPClient --> GUI : Обновление списка заказов
+GUI --> Client : "Заказ #1 создан"
+
+== Изменение статуса ==
+
+Client -> GUI : Выбор заказа\nНовый статус
+GUI -> TCPClient : action: order_update_status\norder_id, status: "assembling"
+
+Server -> Factory : create_order_repository(True)
+Factory --> Server : OrmOrderRepository
+
+Server -> Repo : update_status(1, "assembling")
+Repo -> DB : UPDATE orders SET status=...
+DB --> Repo : OK
+Repo --> Server : true
+
+Server --> TCPClient : {success: true}
+TCPClient --> GUI : Обновление таблицы
+GUI --> Client : "Статус обновлен"
+
+@enduml

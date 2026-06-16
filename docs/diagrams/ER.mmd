@@ -1,0 +1,96 @@
+%% Mermaid ER diagram converted from PlantUML
+erDiagram
+    COMPONENT_CATEGORIES {
+        INTEGER category_id PK
+        VARCHAR category_name UQ
+        TEXT description
+    }
+
+    PC_CATEGORIES {
+        INTEGER pc_category_id PK
+        VARCHAR category_name UQ
+        TEXT description
+    }
+
+    COMPONENTS {
+        INTEGER component_id PK
+        INTEGER category_id FK
+        VARCHAR component_name
+        VARCHAR brand
+        VARCHAR model
+        TEXT specifications
+        DECIMAL price
+        DECIMAL selling_price
+        INTEGER quantity_in_stock
+    }
+
+    CATALOG_BUILDS {
+        INTEGER build_id PK
+        INTEGER pc_category_id FK
+        VARCHAR build_name
+        TEXT description
+        DECIMAL base_price
+        DECIMAL markup_percent
+    }
+
+    CLIENTS {
+        INTEGER client_id PK
+        VARCHAR first_name
+        VARCHAR last_name
+        VARCHAR email UQ
+        VARCHAR phone
+        DATE registration_date
+    }
+
+    USERS {
+        INTEGER user_id PK
+        VARCHAR username UQ
+        VARCHAR password_hash
+        VARCHAR role
+        TIMESTAMP created_at
+    }
+
+    CATALOG_BUILD_ITEMS {
+        INTEGER id PK
+        INTEGER build_id FK
+        INTEGER component_id FK
+        INTEGER quantity
+    }
+
+    ORDERS {
+        INTEGER order_id PK
+        INTEGER client_id FK
+        INTEGER build_id FK
+        VARCHAR order_type
+        VARCHAR status
+        DECIMAL total_price
+        TIMESTAMP order_date
+        TIMESTAMP completion_date
+    }
+
+    ORDER_ITEMS {
+        INTEGER id PK
+        INTEGER order_id FK
+        INTEGER component_id FK
+        INTEGER quantity
+        DECIMAL unit_price
+    }
+
+    FINANCES {
+        INTEGER record_id PK
+        INTEGER order_id FK
+        VARCHAR record_type
+        DECIMAL amount
+        TEXT description
+        TIMESTAMP record_date
+    }
+
+    COMPONENT_CATEGORIES ||--o{ COMPONENTS : "1:N"
+    PC_CATEGORIES ||--o{ CATALOG_BUILDS : "1:N"
+    CATALOG_BUILDS ||--o{ CATALOG_BUILD_ITEMS : "1:N"
+    COMPONENTS ||--o{ CATALOG_BUILD_ITEMS : "1:N"
+    CLIENTS ||--o{ ORDERS : "1:N"
+    CATALOG_BUILDS ||--o{ ORDERS : "0:N"
+    ORDERS ||--o{ ORDER_ITEMS : "1:N"
+    COMPONENTS ||--o{ ORDER_ITEMS : "1:N"
+    ORDERS ||--o{ FINANCES : "0:N"

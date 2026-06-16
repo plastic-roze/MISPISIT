@@ -1,0 +1,49 @@
+%% Mermaid flowchart representing IDEF0 context
+flowchart TB
+    classDef mech fill:#9B59B6,stroke:#6C3483,color:#fff;
+    classDef input fill:#E74C3C,stroke:#C0392B,color:#fff;
+    classDef output fill:#2ECC71,stroke:#27AE60,color:#fff;
+    classDef control fill:#F39C12,stroke:#D68910,color:#000;
+
+    System["Система сборки\nкомпьютеров на заказ"]
+    Input1["Учетные данные"]
+    Input2["Параметры компонентов"]
+    Input3["Заказы клиентов"]
+
+    Output1["Отчеты о заказах"]
+    Output2["Статусы сборок"]
+    Output3["Журналы аудита"]
+
+    Control["Бизнес-правила"]
+    Mech1["TCP-сервер"]
+    Mech2["PostgreSQL"]
+
+    class Input1 input
+    class Input2 input
+    class Input3 input
+    class Output1 output
+    class Output2 output
+    class Output3 output
+    class Control control
+    class Mech1 mech
+    class Mech2 mech
+
+    Input1 --> System
+    Input2 --> System
+    Input3 --> System
+
+    System --> Output1
+    System --> Output2
+    System --> Output3
+
+    Control --> System
+    Mech1 --> System
+    Mech2 --> System
+
+    subgraph Legend [Легенда]
+        direction TB
+        L1["Входы"]
+        L2["Управление"]
+        L3["Выходы"]
+        L4["Механизмы"]
+    end
